@@ -8,7 +8,7 @@ EXPOSE 5000 9229
 ENV DEBIAN_FRONTEND=noninteractive \
 	NODE_PATH=/usr/lib/node_modules \
 	HOMEBREW_NO_ENV_FILTERING=1 \
-	PATH=/home/linuxbrew/.linuxbrew/bin:/usr/lib/x86_64-linux-gnu/ImageMagick-6.8.9/bin-Q16:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/ bin:/sbin:/bin \
+	PATH=/home/linuxbrew/.linuxbrew/bin:/usr/lib/x86_64-linux-gnu/ImageMagick-6.8.9/bin-Q16:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
 	LD_LIBRARY_PATH=/home/linuxbrew/.linuxbrew/lib \
 	LANG=en_US.UTF-8 \
 	LC_ALL=en_US.UTF-8 \
