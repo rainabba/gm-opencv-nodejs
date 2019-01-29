@@ -3,39 +3,34 @@ FROM justadudewhohacks/opencv-nodejs:node9-opencv3.4.1-contrib
 LABEL maintainer="Michael Richardson <rainabba@gmail.com>"
 LABEL repository="https://github.com/rainabba/gm-opencv-nodejs.git"
 
+USER root
 ENV DEBIAN_FRONTEND=noninteractive \
 	NODE_PATH=/usr/lib/node_modules \
-	HOMEBREW_NO_ENV_FILTERING=1 \
 	PATH=/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
-	LD_LIBRARY_PATH=/home/linuxbrew/.linuxbrew/lib \
-	LANG="en_US.UTF-8" \
-	LC_ALL="en_US.UTF-8" \
-	LC_CTYPE=en_US.UTF-8 \
-	LANGUAGE="en_US:en"
-
-ARG WORKDIR=/
-WORKDIR ${WORKDIR}
-COPY ./linuxbrew-graphics-magick.sh /
-
-RUN echo en_US UTF-8 >> /etc/locale.gen \
-	#&& apt-get update \
-	#&& apt-get upgrade -y \
-	&& apt-get install locales \
-	&& local-gen \ 
+	HOMEBREW_NO_ENV_FILTERING=1
+RUN apt-get update \
+	&& echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen \
+	&& apt-get install -y --no-install-recommends locales sudo vim pkg-config build-essential wget libc6 curl file git ruby \
+	&& dpkg-reconfigure locales \
+	&& update-locale LANG=en_US.UTF-8 \
+	&& apt-get upgrade -y \
 	&& update-ca-certificates --fresh \
 	&& apt-cache policy ca-certificates \
-	&& apt-get install -y sudo vim pkg-config build-essential wget libc6 curl file git ruby \
-	&& find /var/cache/apt/archives /var/lib/apt/lists -not -name lock -type f -delete
+	&& find /var/cache/apt/archives /var/lib/apt/lists -not -name lock -type f -delete \
+	&& useradd -m -s /bin/bash linuxbrew
 
-RUN useradd -m linuxbrew \
-	&& cd /home/linuxbrew \
-	&& git clone https://github.com/Homebrew/linuxbrew.git ./.linuxbrew/ \
-	&& chown -R linuxbrew:root /home/linuxbrew \
-	&& chmod 770 /linuxbrew-graphics-magick.sh \
-	&& chown -R linuxbrew:root /linuxbrew-graphics-magick.sh \
-	&& sudo ln -s /home/linuxbrew/.linuxbrew/bin/gm /usr/local/bin/gm
+USER linuxbrew
+WORKDIR /home/linuxbrew
+ENV LANG=en_US.UTF-8 \
+	PATH=/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:$PATH \
+	SHELL=/bin/bash
+RUN git clone https://github.com/Linuxbrew/brew.git /home/linuxbrew/.linuxbrew/Homebrew \
+	&& mkdir /home/linuxbrew/.linuxbrew/bin \
+	&& ln -s ../Homebrew/bin/brew /home/linuxbrew/.linuxbrew/bin/ \
+	&& test -d ~/.linuxbrew \
+	&& brew config && brew upgrade && brew update && brew install graphicsmagick ghostscript
 	
-#USER linuxbrew
-#RUN sh /linuxbrew-graphics-magick.sh
+	#&& ln -s /home/linuxbrew/.linuxbrew/bin/gm /usr/local/bin/gm \
+	#&& ln -s /home/linuxbrew/.linuxbrew/bin/gs /usr/local/bin/gs
 
 CMD ["/bin/bash"]

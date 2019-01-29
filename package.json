@@ -1,6 +1,6 @@
 {
   "name": "gm-opencv-nodejs",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "previousVersion": "1.0.0",
   "description": "Docker image based on justadudewhohacks/opencv-nodejs:node9-opencv3.4.1-contrib then adds graphicsmagick (also can be aliased as imagemagick) on top.",
   "nodejsVersion": "9",
