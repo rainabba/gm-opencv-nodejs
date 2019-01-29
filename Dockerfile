@@ -3,39 +3,34 @@ FROM justadudewhohacks/opencv-nodejs:node9-opencv3.4.1-contrib
 LABEL maintainer="Michael Richardson <rainabba@gmail.com>"
 LABEL repository="https://github.com/rainabba/gm-opencv-nodejs.git"
 
-EXPOSE 5000 9229
-
-ENV DEBIAN_FRONTEND=noninteractive
-ENV NODE_PATH=/usr/lib/node_modules
-ENV HOMEBREW_NO_ENV_FILTERING=1
-ENV PATH=/home/linuxbrew/.linuxbrew/bin:/usr/lib/x86_64-linux-gnu/ImageMagick-6.8.9/bin-Q16:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-ENV LD_LIBRARY_PATH=/home/linuxbrew/.linuxbrew/lib
-
-ARG WORKDIR=/
-WORKDIR ${WORKDIR}
-
-COPY ./linuxbrew-graphics-magick.sh /
-
-RUN useradd -m linuxbrew \ 
-&& apt-get update -y \ 
-&& apt-get upgrade -y \ 
-&& update-ca-certificates --fresh \ 
-&& apt-cache policy ca-certificates \ 
-&& apt-get install -y sudo locales vim pkg-config build-essential wget libc6 curl file git ruby \ 
-&& locale-gen "en_US.UTF-8" \ 
-&& echo -e 'LANG="en_US.UTF-8"\nLANGUAGE="en_US:en"\n' > /etc/default/locale \ 
-&& find /var/cache/apt/archives /var/lib/apt/lists -not -name lock -type f -delete \ 
-&& cd /home/linuxbrew \ 
-&& git clone https://github.com/Homebrew/linuxbrew.git ./.linuxbrew/ \ 
-&& chown -R linuxbrew:root /home/linuxbrew \ 
-&& chmod 770 /linuxbrew-graphics-magick.sh \ 
-&& chown -R linuxbrew:root /linuxbrew-graphics-magick.sh;
-
-ENV LANG=en_US.UTF-8
-ENV LC_ALL=en_US.UTF-8
-ENV LANGUAGE=en_US:en
+USER root
+ENV DEBIAN_FRONTEND=noninteractive \
+	NODE_PATH=/usr/lib/node_modules \
+	PATH=/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
+	HOMEBREW_NO_ENV_FILTERING=1
+RUN apt-get update \
+	&& echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen \
+	&& apt-get install -y --no-install-recommends locales sudo vim pkg-config build-essential wget libc6 curl file git ruby \
+	&& dpkg-reconfigure locales \
+	&& update-locale LANG=en_US.UTF-8 \
+	&& apt-get upgrade -y \
+	&& update-ca-certificates --fresh \
+	&& apt-cache policy ca-certificates \
+	&& find /var/cache/apt/archives /var/lib/apt/lists -not -name lock -type f -delete \
+	&& useradd -m -s /bin/bash linuxbrew
 
 USER linuxbrew
-RUN /linuxbrew-graphics-magick.sh
+WORKDIR /home/linuxbrew
+ENV LANG=en_US.UTF-8 \
+	PATH=/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:$PATH \
+	SHELL=/bin/bash
+RUN git clone https://github.com/Linuxbrew/brew.git /home/linuxbrew/.linuxbrew/Homebrew \
+	&& mkdir /home/linuxbrew/.linuxbrew/bin \
+	&& ln -s ../Homebrew/bin/brew /home/linuxbrew/.linuxbrew/bin/ \
+	&& test -d ~/.linuxbrew \
+	&& brew config && brew upgrade && brew update && brew install graphicsmagick ghostscript
+	
+	#&& ln -s /home/linuxbrew/.linuxbrew/bin/gm /usr/local/bin/gm \
+	#&& ln -s /home/linuxbrew/.linuxbrew/bin/gs /usr/local/bin/gs
 
 CMD ["/bin/bash"]
